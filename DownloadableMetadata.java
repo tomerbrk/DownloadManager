@@ -30,7 +30,7 @@ class DownloadableMetadata {
         this.mdf = getMDF();
         this.rangeList = makeRangeList();
         this.conserverRangeList = new ArrayList(this.rangeList);
-        this.downloaded = this.rangeList.size();
+        this.downloaded = 100 - this.rangeList.size();
     }
 
     private File getMDF() {
@@ -118,8 +118,8 @@ class DownloadableMetadata {
         Range newRange = new Range(newStart, newEnd);
 
         if(dist == 1 || dist == 0 ){
-            this.downloaded--;
-            System.out.println("Downloaded " + (100 - this.downloaded) + "%");
+            this.downloaded++;
+            System.out.println("Downloaded " + this.downloaded + "%");
         }
         this.conserverRangeList.set(i, newRange);
         writeNewRangeToTemp();
@@ -131,7 +131,7 @@ class DownloadableMetadata {
                 tempMDF.createNewFile();
             }
 
-            // write new ranges to temp file
+            // write current ranges to temp file
             RandomAccessFile ratmp = new RandomAccessFile(tempMDF, "rw");
             StringBuilder stringBuilder = new StringBuilder() ;
             for (Range range: this.conserverRangeList) {
@@ -154,7 +154,11 @@ class DownloadableMetadata {
     }
 
     boolean isCompleted() {
-        return (this.downloaded == 0);
+        if (this.downloaded == 100){
+            this.delete();
+            return  true;
+        }
+        return false;
     }
 
     void delete() {

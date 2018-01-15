@@ -12,17 +12,15 @@ class TokenBucket {
         this.size = tokens;
     }
 
-    synchronized void take(long tokens) {
+    synchronized long take(long tokens) {
         if(tokens < this.size){
             this.size -= tokens;
+            return tokens;
         }
+        return 0;
     }
 
     synchronized void set(long tokens) {
         this.size = tokens;
-    }
-
-    synchronized long getSize(){
-        return this.size;
     }
 }

@@ -46,11 +46,12 @@ public class HTTPRangeGetter implements Runnable {
                 long readBytes = 0;
                 long bytesToRead = range.getLength();
                 while (readBytes < bytesToRead) {
-                    if(tokenBucket.getSize() >= CHUNK_SIZE){
+                    if(tokenBucket.take(CHUNK_SIZE) == CHUNK_SIZE){
                         byte[] data = new byte[CHUNK_SIZE];
-                        tokenBucket.take(CHUNK_SIZE);
                         long offset = range.getStart() + readBytes;
                         int size_in_bytes = inputStream.read(data);
+
+                        // check for EOF
                         if(size_in_bytes == -1){
                             break;
                         }
@@ -58,8 +59,6 @@ public class HTTPRangeGetter implements Runnable {
                         readBytes += size_in_bytes;
                         Chunk outChunk = new Chunk(data, offset, size_in_bytes, this.range);
                         outQueue.put(outChunk);
-                    } else {
-                        continue;
                     }
                 }
                 inputStream.close();

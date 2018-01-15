@@ -17,7 +17,7 @@ public class FileWriter implements Runnable {
         this.metadata = metadata;
     }
 
-    private void writeChunks() throws IOException {
+    private void writeChunks() throws IOException, InterruptedException {
         File file = new File(metadata.getFilename());
         RandomAccessFile writer = new RandomAccessFile(file, "rw");
         while (!this.metadata.isCompleted()) {
@@ -27,8 +27,11 @@ public class FileWriter implements Runnable {
                 writer.write(chunk.getData(),0,chunk.getSize_in_bytes());
                 this.metadata.addDataToDynamicMetadata(chunk);
 
+            } catch (IOException e) {
+                throw new IOException("Could not write chunk to file. Download Failed");
             } catch (InterruptedException e) {
-                System.err.println("Could not write chunk to file. Download Failed");
+                String err = "Runtime interruption. Download failed.";
+                throw new InterruptedException(err);
             }
         }
         writer.close();
@@ -38,8 +41,8 @@ public class FileWriter implements Runnable {
     public void run() {
         try {
             this.writeChunks();
-        } catch (IOException e) {
-            System.err.println("Could not write to file. Download Failed");
+        } catch (IOException | InterruptedException e) {
+            System.err.println(e);
         }
     }
 }

@@ -63,6 +63,8 @@ public class IdcDm {
                 executor.execute(worker);
             }
 
-        } catch (Exception e){}
+        } catch (Exception e){
+            System.err.println("Error in main function. Download failed.");
+        }
     }
 }
