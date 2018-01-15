@@ -23,7 +23,8 @@ class DownloadableMetadata {
     private File mdf;
     private long size;
     private List<Range> rangeList;
-    private MetaConserverList conserverList;
+    private List<Range>  conserverRangeList;
+    private int downloaded;
 
     DownloadableMetadata(String url) {
         this.url = url;
@@ -32,7 +33,8 @@ class DownloadableMetadata {
         this.size = contentSize();
         this.mdf = getMDF();
         this.rangeList = makeRangeList();
-        this.conserverList = new MetaConserverList(this.rangeList);
+        this.conserverRangeList = new ArrayList(this.rangeList);
+        this.downloaded = this.rangeList.size();
         // call a progress func
 //        System.out.println(rangeList.size());
     }
@@ -113,15 +115,23 @@ class DownloadableMetadata {
         return path.substring(path.lastIndexOf('/') + 1, path.length());
     }
 
-    public void addDataToDynamicMetadat(Chunk chunk){
-        Range range = this.conserverList.addChunkToRange(chunk.getOffset(),chunk.getSize_in_bytes());
-        if(range != null){
-            this.removeRange(range);
+    public void addDataToDynamicMetadata(Chunk chunk){
+        int i = this.rangeList.indexOf(chunk.getRange());
+        Range oldRange = this.conserverRangeList.get(i);
+        long newStart = oldRange.getStart() + chunk.getSize_in_bytes();
+        long newEnd = oldRange.getEnd();
+
+        if(newStart - newEnd != 1 && newStart != newEnd ){
+            Range newRange = new Range(newStart, newEnd);
+            this.conserverRangeList.set(i, newRange);
+        } else {
+            this.removeRange(i);
         }
     }
-    public void removeRange(Range range){
-        this.rangeList.remove(range);
-        System.out.println("Downloaded " + (100 - this.rangeList.size()) + "%");
+    public void removeRange(int i){
+        // write to temp
+        this.downloaded--;
+        System.out.println("Downloaded " + (100 - this.downloaded) + "%");
     }
 
     String getFilename() {

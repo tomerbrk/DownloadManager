@@ -49,7 +49,7 @@ public class HTTPRangeGetter implements Runnable {
                         byte[] data = new byte[CHUNK_SIZE];
                         tokenBucket.take(CHUNK_SIZE);
                         int size_in_bytes = inputStream.read(data);
-                        Chunk outChunk = new Chunk(data, offset, size_in_bytes);
+                        Chunk outChunk = new Chunk(data, offset, size_in_bytes, this.range);
                         offset += size_in_bytes;
                         outQueue.put(outChunk);
                     } else {

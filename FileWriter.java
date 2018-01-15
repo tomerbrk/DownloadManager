@@ -31,7 +31,7 @@ public class FileWriter implements Runnable {
                     writer.write(chunk.getData(),0,chunk.getSize_in_bytes());
 
                     // send chunk (that has range in its members) and truncate it, if range "dies" delete and write to temp
-                    this.downloadableMetadata.addDataToDynamicMetadat(chunk);
+                    this.downloadableMetadata.addDataToDynamicMetadata(chunk);
                 }
                else{
                     Thread.sleep(1000);
