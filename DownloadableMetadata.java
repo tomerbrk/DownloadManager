@@ -120,18 +120,40 @@ class DownloadableMetadata {
         Range oldRange = this.conserverRangeList.get(i);
         long newStart = oldRange.getStart() + chunk.getSize_in_bytes();
         long newEnd = oldRange.getEnd();
+        long dist = newStart - newEnd;
+        Range newRange = new Range(newStart, newEnd);
 
-        if(newStart - newEnd != 1 && newStart != newEnd ){
-            Range newRange = new Range(newStart, newEnd);
-            this.conserverRangeList.set(i, newRange);
-        } else {
-            this.removeRange(i);
+        if(dist == 1 || dist == 0 ){
+            this.downloaded--;
+            System.out.println("Downloaded " + (100 - this.downloaded) + "%");
         }
+        this.conserverRangeList.set(i, newRange);
+        writeNewRangeToTemp();
     }
-    public void removeRange(int i){
-        // write to temp
-        this.downloaded--;
-        System.out.println("Downloaded " + (100 - this.downloaded) + "%");
+    public void writeNewRangeToTemp(){
+        try {
+            File tempMDF = new File(this.metadataFilename + ".tmp");
+            if (!tempMDF.exists()) {
+                tempMDF.createNewFile();
+            }
+
+            // write new ranges to temp file
+            RandomAccessFile ratmp = new RandomAccessFile(tempMDF, "rw");
+            StringBuilder stringBuilder = new StringBuilder() ;
+            for (Range range: this.conserverRangeList) {
+                long start = range.getStart();
+                long end = range.getEnd();
+                long dist = start - end;
+
+                if(!(dist == 1 || dist == 0)){
+                    stringBuilder.append(Long.toString(start) + ',' + Long.toString(end) + "\n");
+                }
+            }
+            ratmp.writeBytes(stringBuilder.toString());
+            ratmp.close();
+            this.delete();
+            tempMDF.renameTo(this.mdf);
+        } catch (IOException e) { }
     }
 
     String getFilename() {
@@ -139,7 +161,7 @@ class DownloadableMetadata {
     }
 
     boolean isCompleted() {
-        return (this.rangeList.size() == 0);
+        return (this.downloaded == 0);
     }
 
     void delete() {

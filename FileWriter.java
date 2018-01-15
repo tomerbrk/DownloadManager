@@ -23,19 +23,11 @@ public class FileWriter implements Runnable {
         File file = new File(downloadableMetadata.getFilename());
         RandomAccessFile writer = new RandomAccessFile(file, "rw");
         while (!this.downloadableMetadata.isCompleted()) {
-
             try{
-                if (!chunkQueue.isEmpty()) {
-                    Chunk chunk = chunkQueue.take();
-                    writer.seek(chunk.getOffset());
-                    writer.write(chunk.getData(),0,chunk.getSize_in_bytes());
-
-                    // send chunk (that has range in its members) and truncate it, if range "dies" delete and write to temp
-                    this.downloadableMetadata.addDataToDynamicMetadata(chunk);
-                }
-               else{
-                    Thread.sleep(1000);
-                }
+                Chunk chunk = chunkQueue.take();
+                writer.seek(chunk.getOffset());
+                writer.write(chunk.getData(),0,chunk.getSize_in_bytes());
+                this.downloadableMetadata.addDataToDynamicMetadata(chunk);
 
             } catch (InterruptedException e) {
                 System.err.println("Could not write chunk to file. Download Failed");

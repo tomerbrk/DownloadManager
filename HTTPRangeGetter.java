@@ -43,14 +43,20 @@ public class HTTPRangeGetter implements Runnable {
 
             if  (connection.getResponseCode() / 100 == 2){
                 InputStream inputStream = connection.getInputStream();
-                long offset = range.getStart();
-                while (offset < range.getEnd()) {
+                long readBytes = 0;
+                long bytesToRead = range.getLength();
+                while (readBytes < bytesToRead) {
                     if(tokenBucket.getSize() >= CHUNK_SIZE){
                         byte[] data = new byte[CHUNK_SIZE];
                         tokenBucket.take(CHUNK_SIZE);
+                        long offset = range.getStart() + readBytes;
                         int size_in_bytes = inputStream.read(data);
+                        if(size_in_bytes == -1){
+                            break;
+                        }
+
+                        readBytes += size_in_bytes;
                         Chunk outChunk = new Chunk(data, offset, size_in_bytes, this.range);
-                        offset += size_in_bytes;
                         outQueue.put(outChunk);
                     } else {
                         continue;
