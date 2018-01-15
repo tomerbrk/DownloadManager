@@ -50,7 +50,7 @@ public class IdcDm {
         TokenBucket tokenBucket = new TokenBucket(maxBytesPerSecond);
         DownloadableMetadata metadata = new DownloadableMetadata(url);
         FileWriter fileWriter = new FileWriter(metadata, outQueue);
-        RateLimiter rateLimiter = new RateLimiter(tokenBucket, maxBytesPerSecond);
+        RateLimiter rateLimiter = new RateLimiter(tokenBucket, maxBytesPerSecond, metadata);
         Thread rateLimiterThread = new Thread(rateLimiter);
         Thread fileWriterThread = new Thread(fileWriter);
         ExecutorService executor = Executors.newFixedThreadPool(numberOfWorkers);

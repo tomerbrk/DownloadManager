@@ -67,8 +67,11 @@ public class HTTPRangeGetter implements Runnable {
             }
 
         } catch (IOException e) {
-            System.err.println("Couldn't fetch range starting at :" + this.range.getStart() + " and ending at: " + this.range.getEnd());
-            System.err.println("Download failed");
+            String err = "Couldn't fetch range starting at :" + this.range.getStart() + " and ending at: " + this.range.getEnd() + ". Download failed.";
+            throw new IOException(err);
+        } catch (InterruptedException e ){
+            String err = "Runtime interruption. Download failed.";
+            throw new InterruptedException(err);
         }
     }
 
@@ -77,8 +80,7 @@ public class HTTPRangeGetter implements Runnable {
         try {
             this.downloadRange();
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            //TODO
+            System.err.println(e);
         }
     }
 }

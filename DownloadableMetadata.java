@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
@@ -12,9 +11,6 @@ import java.util.List;
  *
  * The metadata (or at least which parts already downloaded to disk) is constantly stored safely in disk.
  * When constructing a new metadata object, we first check the disk to load existing metadata.
- *
- * CHALLENGE: try to avoid metadata disk footprint of O(n) in the average case
- * HINT: avoid the obvious bitmap solution, and think about ranges...
  */
 class DownloadableMetadata {
     private final String metadataFilename;
@@ -35,8 +31,6 @@ class DownloadableMetadata {
         this.rangeList = makeRangeList();
         this.conserverRangeList = new ArrayList(this.rangeList);
         this.downloaded = this.rangeList.size();
-        // call a progress func
-//        System.out.println(rangeList.size());
     }
 
     private File getMDF() {
@@ -130,7 +124,7 @@ class DownloadableMetadata {
         this.conserverRangeList.set(i, newRange);
         writeNewRangeToTemp();
     }
-    public void writeNewRangeToTemp(){
+    private void writeNewRangeToTemp(){
         try {
             File tempMDF = new File(this.metadataFilename + ".tmp");
             if (!tempMDF.exists()) {
@@ -151,7 +145,6 @@ class DownloadableMetadata {
             }
             ratmp.writeBytes(stringBuilder.toString());
             ratmp.close();
-            this.delete();
             tempMDF.renameTo(this.mdf);
         } catch (IOException e) { }
     }
@@ -166,10 +159,5 @@ class DownloadableMetadata {
 
     void delete() {
         this.mdf.delete();
-    }
-
-
-    String getUrl() {
-        return url;
     }
 }

@@ -6,28 +6,26 @@ import java.util.concurrent.BlockingQueue;
 /**
  * This class takes chunks from the queue, writes them to disk and updates the file's metadata.
  *
- * NOTE: make sure that the file interface you choose writes every update to the file's content or metadata
- *       synchronously to the underlying storage device.
  */
 public class FileWriter implements Runnable {
 
     private final BlockingQueue<Chunk> chunkQueue;
-    private DownloadableMetadata downloadableMetadata;
+    private DownloadableMetadata metadata;
 
-    FileWriter(DownloadableMetadata downloadableMetadata, BlockingQueue<Chunk> chunkQueue) {
+    FileWriter(DownloadableMetadata metadata, BlockingQueue<Chunk> chunkQueue) {
         this.chunkQueue = chunkQueue;
-        this.downloadableMetadata = downloadableMetadata;
+        this.metadata = metadata;
     }
 
     private void writeChunks() throws IOException {
-        File file = new File(downloadableMetadata.getFilename());
+        File file = new File(metadata.getFilename());
         RandomAccessFile writer = new RandomAccessFile(file, "rw");
-        while (!this.downloadableMetadata.isCompleted()) {
+        while (!this.metadata.isCompleted()) {
             try{
                 Chunk chunk = chunkQueue.take();
                 writer.seek(chunk.getOffset());
                 writer.write(chunk.getData(),0,chunk.getSize_in_bytes());
-                this.downloadableMetadata.addDataToDynamicMetadata(chunk);
+                this.metadata.addDataToDynamicMetadata(chunk);
 
             } catch (InterruptedException e) {
                 System.err.println("Could not write chunk to file. Download Failed");
@@ -41,8 +39,7 @@ public class FileWriter implements Runnable {
         try {
             this.writeChunks();
         } catch (IOException e) {
-            e.printStackTrace();
-            //TODO
+            System.err.println("Could not write to file. Download Failed");
         }
     }
 }

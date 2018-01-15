@@ -7,15 +7,17 @@
 public class RateLimiter implements Runnable {
     private final TokenBucket tokenBucket;
     private final Long maxBytesPerSecond;
+    private DownloadableMetadata metadata;
 
-    RateLimiter(TokenBucket tokenBucket, Long maxBytesPerSecond) {
+    RateLimiter(TokenBucket tokenBucket, Long maxBytesPerSecond,DownloadableMetadata metadata) {
         this.tokenBucket = tokenBucket;
         this.maxBytesPerSecond = maxBytesPerSecond;
+        this.metadata = metadata;
     }
 
     @Override
     public void run() {
-        while (!this.tokenBucket.terminated()) {
+        while (!this.metadata.isCompleted()) {
             try{
                tokenBucket.set(maxBytesPerSecond);
                Thread.sleep(1000);
