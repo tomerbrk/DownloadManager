@@ -66,7 +66,9 @@ class DownloadableMetadata {
             }
             ramdf.writeBytes(stringBuilder.toString());
             ramdf.close();
-        } catch (IOException e) { }
+        } catch (IOException e) {
+            System.err.println("Error initiating metadata file. Download failed.");
+        }
     }
 
     private long contentSize(){
@@ -94,8 +96,10 @@ class DownloadableMetadata {
                     range = new Range(Long.parseLong(separated[0]), Long.parseLong(separated[1]));
                     rangeList.add(range);
             }
-        } catch (IOException e) {}
-
+            ramdf.close();
+        } catch (IOException e) {
+            System.err.println("Error occurred while getting ranges. Download failed.");
+        }
         return rangeList;
     }
 
@@ -156,10 +160,17 @@ class DownloadableMetadata {
             }
             ratmp.writeBytes(stringBuilder.toString());
             ratmp.close();
-//            tempMDF.renameTo(this.mdf);
-            Files.move(tempMDF.toPath(),this.mdf.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) { }
+
+            //attempt to rename .tmp file
+            try {
+                Files.move(tempMDF.toPath(), this.mdf.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            }catch (IOException e) {
+                System.err.println("Error renaming .tmp file. Download failed.");
+            }
+        } catch (IOException e) {
+            System.err.println("Error writing to .tmp file. Download failed.");
+        }
     }
 
     String getFilename() {
@@ -181,7 +192,6 @@ class DownloadableMetadata {
                 System.err.println("Metadata deletion failed");
                 e.printStackTrace();
             }
-
         }
     }
 }
