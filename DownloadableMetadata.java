@@ -1,6 +1,6 @@
-import com.sun.org.apache.xpath.internal.SourceTree;
-
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
@@ -137,6 +137,7 @@ class DownloadableMetadata {
     private void writeNewRangeToTemp(){
         try {
             File tempMDF = new File(this.metadataFilename + ".tmp");
+
             if (!tempMDF.exists()) {
                 tempMDF.createNewFile();
             }
@@ -155,8 +156,9 @@ class DownloadableMetadata {
             }
             ratmp.writeBytes(stringBuilder.toString());
             ratmp.close();
-            tempMDF.renameTo(this.mdf);
-
+//            tempMDF.renameTo(this.mdf);
+            Files.move(tempMDF.toPath(),this.mdf.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) { }
     }
 
@@ -171,11 +173,15 @@ class DownloadableMetadata {
     void delete() {
         if(this.mdf.exists()) {
             System.err.println("Deleting metadata file");
-            if(this.mdf.delete()){
+
+            try {
+                Files.delete(this.mdf.toPath());
                 System.err.println("Metadata file deleted");
-            } else{
+            } catch (IOException e) {
                 System.err.println("Metadata deletion failed");
+                e.printStackTrace();
             }
+
         }
     }
 }
