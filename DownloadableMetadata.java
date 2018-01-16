@@ -48,12 +48,14 @@ class DownloadableMetadata {
                     initMDF(mdf);
                 } else {
                     System.err.println("Error creating metadata file. Download failed.");
+                    System.exit(-1);
                 }
             }
             return mdf;
         } catch (IOException e) {
             System.err.println("Error getting metadata file. Download failed.");
-            return mdf;
+            System.exit(-1);
+            return null;
         }
     }
 
@@ -81,6 +83,7 @@ class DownloadableMetadata {
             ramdf.close();
         } catch (IOException e) {
             System.err.println("Error initiating metadata file. Download failed.");
+            System.exit(-1);
         }
     }
 
@@ -112,6 +115,7 @@ class DownloadableMetadata {
             ramdf.close();
         } catch (IOException e) {
             System.err.println("Error occurred while getting ranges. Download failed.");
+            System.exit(-1);
         }
         return rangeList;
     }
@@ -146,6 +150,7 @@ class DownloadableMetadata {
             if (!tempMDF.exists()) {
                 if(!tempMDF.createNewFile()){
                     System.err.println("Error creating temporary metadata file. Download failed.");
+                    System.exit(-1);
                 }
             }
 
@@ -171,9 +176,11 @@ class DownloadableMetadata {
                         StandardCopyOption.REPLACE_EXISTING);
             }catch (IOException e) {
                 System.err.println("Error renaming .tmp file. Download failed.");
+                System.exit(-1);
             }
         } catch (IOException e) {
             System.err.println("Error writing to .tmp file. Download failed.");
+            System.exit(-1);
         }
     }
 

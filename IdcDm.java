@@ -65,6 +65,7 @@ public class IdcDm {
             executor.shutdown();
         } catch (Exception e){
             System.err.println("Error in main function. Download failed.");
+            System.exit(-1);
         }
     }
 }

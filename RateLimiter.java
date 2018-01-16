@@ -24,6 +24,7 @@ public class RateLimiter implements Runnable {
 
             } catch (InterruptedException e) {
                 System.err.println("RateLimiter interrupted. Download failed.");
+                System.exit(-1);
             }
         }
     }

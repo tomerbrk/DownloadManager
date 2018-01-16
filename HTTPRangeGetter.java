@@ -80,6 +80,7 @@ public class HTTPRangeGetter implements Runnable {
             this.downloadRange();
         } catch (IOException | InterruptedException e) {
             System.err.println(e);
+            System.exit(-1);
         }
     }
 }
