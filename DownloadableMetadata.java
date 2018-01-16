@@ -1,3 +1,5 @@
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -155,7 +157,10 @@ class DownloadableMetadata {
 
     boolean isCompleted() {
         if (this.downloaded == 100){
-            this.delete();
+            if(this.mdf.exists()) {
+                this.delete();
+                System.out.println("Download succeeded");
+            }
             return  true;
         }
         return false;

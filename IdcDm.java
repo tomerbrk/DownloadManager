@@ -62,7 +62,7 @@ public class IdcDm {
                 Runnable worker = new HTTPRangeGetter(url,range, outQueue, tokenBucket);
                 executor.execute(worker);
             }
-
+            executor.shutdown();
         } catch (Exception e){
             System.err.println("Error in main function. Download failed.");
         }
