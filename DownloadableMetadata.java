@@ -121,11 +121,19 @@ class DownloadableMetadata {
 
         if(dist == 1 || dist == 0 ){
             this.downloaded++;
-            System.out.println("Downloaded " + this.downloaded + "%");
+            System.err.println("Downloaded " + this.downloaded + "%");
         }
-        this.conserverRangeList.set(i, newRange);
-        writeNewRangeToTemp();
+
+        // print download complete, delete mdf
+        if (this.isCompleted()){
+            System.err.println("Download succeeded");
+            this.delete();
+        } else {
+            this.conserverRangeList.set(i, newRange);
+            writeNewRangeToTemp();
+        }
     }
+
     private void writeNewRangeToTemp(){
         try {
             File tempMDF = new File(this.metadataFilename + ".tmp");
@@ -148,6 +156,7 @@ class DownloadableMetadata {
             ratmp.writeBytes(stringBuilder.toString());
             ratmp.close();
             tempMDF.renameTo(this.mdf);
+
         } catch (IOException e) { }
     }
 
@@ -156,17 +165,17 @@ class DownloadableMetadata {
     }
 
     boolean isCompleted() {
-        if (this.downloaded == 100){
-            if(this.mdf.exists()) {
-                this.delete();
-                System.out.println("Download succeeded");
-            }
-            return  true;
-        }
-        return false;
+        return (this.downloaded == 100);
     }
 
     void delete() {
-        this.mdf.delete();
+        if(this.mdf.exists()) {
+            System.err.println("Deleting metadata file");
+            if(this.mdf.delete()){
+                System.err.println("Metadata file deleted");
+            } else{
+                System.err.println("Metadata deletion failed");
+            }
+        }
     }
 }
