@@ -1,0 +1,7 @@
+MetaConserverList – No need to import java.util.LinkedList
+Warnings:
+FileWriter line 23, DownloadableMetaData line 86 – need to add "finally" block to close the resource.
+DownloadableMetadata line 32 – Add type argument to ArrayList (new ArrayList<Range>(this.rangeList);
+
+Problem dowloading file: https://archive.org/download/Mario1_500/Mario1_500_LQ.avi. Different file from same website.
+Downloads normally, then catches I/O exception, then resumes downloading normally but does not complete.
