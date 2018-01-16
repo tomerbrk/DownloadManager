@@ -36,15 +36,24 @@ class DownloadableMetadata {
     }
 
     private File getMDF() {
+        File mdf = new File(this.metadataFilename);
         try {
-            File mdf = new File(this.metadataFilename);
+            File tempMDF = new File(this.metadataFilename + ".tmp");
+
+            // delete .tmp file if program crashed before renaming it
+            Files.deleteIfExists(tempMDF.toPath());
+
             if (!mdf.exists()) {
-                mdf.createNewFile();
-                initMDF(mdf);
+                if(mdf.createNewFile()) {
+                    initMDF(mdf);
+                } else {
+                    System.err.println("Error creating metadata file. Download failed.");
+                }
             }
             return mdf;
         } catch (IOException e) {
-           return null;
+            System.err.println("Error getting metadata file. Download failed.");
+            return mdf;
         }
     }
 
@@ -56,13 +65,17 @@ class DownloadableMetadata {
             StringBuilder stringBuilder = new StringBuilder() ;
             Long start, end, percent;
             percent = this.size/100;
+
+            // write to metadata file ranges
+            // each range is a percent of the file size, apart from maybe the last
             for (long i = 0; i< 100; i++){
                 start = i*percent;
                 end = start + percent - 1;
                 if(i == 99 && end != this.size){
                     end = this.size;
                 }
-                stringBuilder.append(Long.toString(start) + ',' + Long.toString(end) + "\n");
+                String sRange = Long.toString(start) + ',' + Long.toString(end) + "\n";
+                stringBuilder.append(sRange);
             }
             ramdf.writeBytes(stringBuilder.toString());
             ramdf.close();
@@ -103,18 +116,6 @@ class DownloadableMetadata {
         return rangeList;
     }
 
-    public List<Range> getRangeList(){
-        return this.rangeList;
-    }
-
-    private static String getMetadataName(String filename) {
-        return filename + ".metadata";
-    }
-
-    private static String getName(String path) {
-        return path.substring(path.lastIndexOf('/') + 1, path.length());
-    }
-
     public void addDataToDynamicMetadata(Chunk chunk){
         int i = this.rangeList.indexOf(chunk.getRange());
         Range oldRange = this.conserverRangeList.get(i);
@@ -128,7 +129,7 @@ class DownloadableMetadata {
             System.err.println("Downloaded " + this.downloaded + "%");
         }
 
-        // print download complete, delete mdf
+        // print download complete message  , delete mdf
         if (this.isCompleted()){
             System.err.println("Download succeeded");
             this.delete();
@@ -143,7 +144,9 @@ class DownloadableMetadata {
             File tempMDF = new File(this.metadataFilename + ".tmp");
 
             if (!tempMDF.exists()) {
-                tempMDF.createNewFile();
+                if(!tempMDF.createNewFile()){
+                    System.err.println("Error creating temporary metadata file. Download failed.");
+                }
             }
 
             // write current ranges to temp file
@@ -155,7 +158,8 @@ class DownloadableMetadata {
                 long dist = start - end;
 
                 if(!(dist == 1 || dist == 0)){
-                    stringBuilder.append(Long.toString(start) + ',' + Long.toString(end) + "\n");
+                    String sRange = Long.toString(start) + ',' + Long.toString(end) + "\n";
+                    stringBuilder.append(sRange);
                 }
             }
             ratmp.writeBytes(stringBuilder.toString());
@@ -181,7 +185,19 @@ class DownloadableMetadata {
         return (this.downloaded == 100);
     }
 
-    void delete() {
+    public List<Range> getRangeList(){
+        return this.rangeList;
+    }
+
+    private static String getMetadataName(String filename) {
+        return filename + ".metadata";
+    }
+
+    private static String getName(String path) {
+        return path.substring(path.lastIndexOf('/') + 1, path.length());
+    }
+
+    private void delete() {
         if(this.mdf.exists()) {
             System.err.println("Deleting metadata file");
 
@@ -190,7 +206,6 @@ class DownloadableMetadata {
                 System.err.println("Metadata file deleted");
             } catch (IOException e) {
                 System.err.println("Metadata deletion failed");
-                e.printStackTrace();
             }
         }
     }

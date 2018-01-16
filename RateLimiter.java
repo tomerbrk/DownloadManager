@@ -22,7 +22,9 @@ public class RateLimiter implements Runnable {
                tokenBucket.set(maxBytesPerSecond);
                Thread.sleep(1000);
 
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+                System.err.println("RateLimiter interrupted. Download failed.");
+            }
         }
     }
 }
